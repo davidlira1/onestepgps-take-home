@@ -20,12 +20,6 @@ dist/
 .vite/
 *.local
 
-# Local database files
-*.db
-*.db-journal
-*.sqlite
-*.sqlite3
-
 # OS and editor
 .DS_Store
 .idea/
