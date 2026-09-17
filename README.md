@@ -13,10 +13,11 @@ Preferences are stored behind a storage interface in the server so the rest of t
 
 ## Setup
 
-The API currently returns an empty device list. From the repo root:
+Set `ONESTEP_API_KEY` to your public API key. The server will not start without it.
 
 ```
 cd server
+export ONESTEP_API_KEY=your-key
 go run ./cmd/server
 ```
 
@@ -26,4 +27,4 @@ In another terminal:
 curl localhost:8080/api/devices
 ```
 
-The server listens on port 8080 by default. Set `PORT` to change it. See `server/.env.example`.
+The server listens on port 8080 by default. Set `PORT` to change it.

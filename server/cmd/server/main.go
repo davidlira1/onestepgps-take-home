@@ -8,14 +8,20 @@ import (
 	"syscall"
 
 	"github.com/davidlira1/onestepgps-take-home/server/internal/config"
-	"github.com/davidlira1/onestepgps-take-home/server/internal/device"
 	"github.com/davidlira1/onestepgps-take-home/server/internal/httpserver"
+	"github.com/davidlira1/onestepgps-take-home/server/internal/onestep"
 )
 
 func main() {
 	log := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	cfg := config.Load()
-	lister := device.NewStaticLister(nil)
+
+	cfg, err := config.Load()
+	if err != nil {
+		log.Error("config", "err", err)
+		os.Exit(1)
+	}
+
+	lister := onestep.NewClient(cfg.APIKey)
 	srv := httpserver.New(cfg.Addr(), lister, log)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
