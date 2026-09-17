@@ -27,4 +27,15 @@ In another terminal:
 curl localhost:8080/api/devices
 ```
 
-The server listens on port 8080 by default. Set `PORT` to change it.
+Preferences (sort, hidden devices, map type, theme) are stored locally in SQLite.
+Send only the fields you want to change; omitted fields stay as they are.
+Include the current `version` from GET. A stale version returns 409.
+
+```
+curl localhost:8080/api/preferences
+curl -X PATCH localhost:8080/api/preferences \
+  -H "Content-Type: application/json" \
+  -d '{"version":1,"theme":"dark"}'
+```
+
+The server listens on port 8080 by default. Set `PORT` to change it. Set `PREFS_DB_PATH` to change the SQLite file (default `data/preferences.db`).

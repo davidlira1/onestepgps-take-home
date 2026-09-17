@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/davidlira1/onestepgps-take-home/server/internal/device"
+	"github.com/davidlira1/onestepgps-take-home/server/internal/pref"
 )
 
 type Server struct {
@@ -15,10 +16,15 @@ type Server struct {
 	log        *slog.Logger
 }
 
-func New(addr string, lister device.Lister, log *slog.Logger) *Server {
+func New(addr string, lister device.Lister, store pref.Store, log *slog.Logger) *Server {
 	mux := http.NewServeMux()
+	
 	devices := DeviceHandler{lister: lister, log: log}
 	mux.HandleFunc("GET /api/devices", devices.list)
+
+	preferences := PreferencesHandler{store: store, log: log}
+	mux.HandleFunc("GET /api/preferences", preferences.get)
+	mux.HandleFunc("PATCH /api/preferences", preferences.patch)
 
 	return &Server{
 		httpServer: &http.Server{

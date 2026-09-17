@@ -6,8 +6,9 @@ import (
 )
 
 type Config struct {
-	Port   string
-	APIKey string
+	Port        string
+	APIKey      string
+	PrefsDBPath string
 }
 
 func Load() (Config, error) {
@@ -21,7 +22,12 @@ func Load() (Config, error) {
 		return Config{}, fmt.Errorf("ONESTEP_API_KEY is required")
 	}
 
-	return Config{Port: port, APIKey: apiKey}, nil
+	prefsDBPath := os.Getenv("PREFS_DB_PATH")
+	if prefsDBPath == "" {
+		prefsDBPath = "data/preferences.db"
+	}
+
+	return Config{Port: port, APIKey: apiKey, PrefsDBPath: prefsDBPath}, nil
 }
 
 func (c Config) Addr() string {

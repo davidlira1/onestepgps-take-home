@@ -19,6 +19,10 @@ dist/
 .vite/
 *.local
 
+# Local SQLite
+*.db
+server/data/
+
 # OS and editor
 .DS_Store
 .idea/
