@@ -13,15 +13,9 @@ bin/
 *.out
 vendor/
 
-# Node / Vue
-node_modules/
-dist/
-.vite/
-*.local
-
 # Local SQLite
 *.db
-server/data/
+data/
 
 # OS and editor
 .DS_Store

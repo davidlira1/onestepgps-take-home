@@ -39,3 +39,13 @@ curl -X PATCH localhost:8080/api/preferences \
 ```
 
 The server listens on port 8080 by default. Set `PORT` to change it. Set `PREFS_DB_PATH` to change the SQLite file (default `data/preferences.db`).
+
+The Vue UI is a separate Vite app. In another terminal:
+
+```
+cd ui
+npm install
+npm run dev
+```
+
+The UI scaffold is an empty dashboard shell (header, scrolling sidebar, map pane, footer). It does not call the API yet.
