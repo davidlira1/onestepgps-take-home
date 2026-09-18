@@ -7,6 +7,10 @@ const props = defineProps<{
   device: Device
 }>()
 
+const emit = defineEmits<{
+  select: [id: string]
+}>()
+
 const coords = computed(() => {
   const { latitude, longitude } = props.device
   if (latitude == null || longitude == null) {
@@ -17,7 +21,14 @@ const coords = computed(() => {
 </script>
 
 <template>
-  <li class="item">
+  <li
+    class="item"
+    role="button"
+    tabindex="0"
+    @click="emit('select', device.id)"
+    @keydown.enter.prevent="emit('select', device.id)"
+    @keydown.space.prevent="emit('select', device.id)"
+  >
     <div class="heading">
       <p class="name">{{ device.name }}</p>
       <p class="connectivity" :class="{ online: device.online }">
@@ -42,6 +53,11 @@ const coords = computed(() => {
   padding: 14px 20px;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.item:hover {
+  background: #f3f4f6;
 }
 
 .item + .item {

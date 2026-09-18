@@ -2,11 +2,14 @@
 import { computed } from 'vue'
 import type { Device } from '@/types/device'
 import GoogleMapFitBounds from '@/components/map/GoogleMapFitBounds.vue'
+import GoogleMapFocus from '@/components/map/GoogleMapFocus.vue'
 import GoogleMapLoader from '@/components/map/GoogleMapLoader.vue'
 import GoogleMapMarker from '@/components/map/GoogleMapMarker.vue'
 
 const props = defineProps<{
   devices: Device[]
+  selectedDeviceId: string | null
+  focusNonce: number
 }>()
 
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? ''
@@ -29,6 +32,17 @@ const mapPoints = computed(() =>
     lng: device.longitude,
   })),
 )
+
+const focusTarget = computed(() => {
+  if (!props.selectedDeviceId) {
+    return null
+  }
+  const device = locatedDevices.value.find((d) => d.id === props.selectedDeviceId)
+  if (!device) {
+    return null
+  }
+  return { lat: device.latitude, lng: device.longitude, nonce: props.focusNonce }
+})
 </script>
 
 <template>
@@ -45,6 +59,7 @@ const mapPoints = computed(() =>
           :title="device.name"
         />
         <GoogleMapFitBounds :google="google" :map="map" :points="mapPoints" />
+        <GoogleMapFocus :map="map" :target="focusTarget" />
       </template>
     </GoogleMapLoader>
   </section>

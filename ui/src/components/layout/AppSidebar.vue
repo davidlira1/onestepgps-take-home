@@ -7,6 +7,10 @@ defineProps<{
   loading: boolean
   error: string | null
 }>()
+
+const emit = defineEmits<{
+  select: [id: string]
+}>()
 </script>
 
 <template>
@@ -14,7 +18,12 @@ defineProps<{
     <p v-if="loading" class="message">Loading devices…</p>
     <p v-else-if="error" class="message error">{{ error }}</p>
     <ul v-else class="device-list">
-      <DeviceListItem v-for="device in devices" :key="device.id" :device="device" />
+      <DeviceListItem
+        v-for="device in devices"
+        :key="device.id"
+        :device="device"
+        @select="emit('select', $event)"
+      />
     </ul>
   </aside>
 </template>

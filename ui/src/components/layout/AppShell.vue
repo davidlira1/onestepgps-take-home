@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useDevices } from '@/composables/useDevices'
 import AppHeader from './AppHeader.vue'
 import AppSidebar from './AppSidebar.vue'
@@ -7,6 +7,13 @@ import AppMapPane from './AppMapPane.vue'
 import AppFooter from './AppFooter.vue'
 
 const { devices, loading, error, load } = useDevices()
+const selectedDeviceId = ref<string | null>(null)
+const focusNonce = ref(0)
+
+function selectDevice(id: string) {
+  selectedDeviceId.value = id
+  focusNonce.value += 1
+}
 
 onMounted(load)
 </script>
@@ -15,8 +22,17 @@ onMounted(load)
   <div class="shell">
     <AppHeader />
     <div class="main">
-      <AppSidebar :devices="devices" :loading="loading" :error="error" />
-      <AppMapPane :devices="devices" />
+      <AppSidebar
+        :devices="devices"
+        :loading="loading"
+        :error="error"
+        @select="selectDevice"
+      />
+      <AppMapPane
+        :devices="devices"
+        :selected-device-id="selectedDeviceId"
+        :focus-nonce="focusNonce"
+      />
     </div>
     <AppFooter />
   </div>
