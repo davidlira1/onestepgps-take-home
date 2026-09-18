@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Device } from '@/types/device'
+import GoogleMapFitBounds from '@/components/map/GoogleMapFitBounds.vue'
 import GoogleMapLoader from '@/components/map/GoogleMapLoader.vue'
 import GoogleMapMarker from '@/components/map/GoogleMapMarker.vue'
 
@@ -21,6 +22,13 @@ const locatedDevices = computed(() =>
       device.latitude != null && device.longitude != null,
   ),
 )
+
+const mapPoints = computed(() =>
+  locatedDevices.value.map((device) => ({
+    lat: device.latitude,
+    lng: device.longitude,
+  })),
+)
 </script>
 
 <template>
@@ -36,6 +44,7 @@ const locatedDevices = computed(() =>
           :lng="device.longitude"
           :title="device.name"
         />
+        <GoogleMapFitBounds :google="google" :map="map" :points="mapPoints" />
       </template>
     </GoogleMapLoader>
   </section>

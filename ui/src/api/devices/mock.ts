@@ -6,6 +6,11 @@ const laLocations = [
   { name: 'Chevy Silverado', make: 'Chevrolet', model: 'Silverado 1500', lat: 33.7701, lng: -118.1937, status: 'off', speed: 0, heading: 270 },
   { name: 'Toyota 4Runner', make: 'Toyota', model: '4Runner TRD', lat: 34.1478, lng: -118.1445, status: 'driving', speed: 52, heading: 45 },
   { name: 'Freightliner M2', make: 'Freightliner', model: 'M2 106', lat: 34.1808, lng: -118.3090, status: 'driving', speed: 38, heading: 315 },
+  { name: 'Honda Civic', make: 'Honda', model: 'Civic', lat: 33.6846, lng: -117.8265, status: 'idle', speed: 0, heading: 0 },
+  { name: 'Tesla Model 3', make: 'Tesla', model: 'Model 3', lat: 32.7157, lng: -117.1611, status: 'driving', speed: 41, heading: 200 },
+  { name: 'Ram 2500', make: 'Ram', model: '2500', lat: 34.5794, lng: -118.1165, status: 'off', speed: 0, heading: 90 },
+  { name: 'Mercedes Sprinter', make: 'Mercedes-Benz', model: 'Sprinter', lat: 34.2746, lng: -119.2290, status: 'stopped', speed: 0, heading: 135 },
+  { name: 'Nissan NV', make: 'Nissan', model: 'NV 2500', lat: 33.9533, lng: -117.3962, status: 'driving', speed: 29, heading: 270 },
 ]
 
 export const mockDevices: Device[] = []
