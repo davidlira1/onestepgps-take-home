@@ -40,7 +40,7 @@ curl -X PATCH localhost:8080/api/preferences \
 
 The server listens on port 8080 by default. Set `PORT` to change it. Set `PREFS_DB_PATH` to change the SQLite file (default `data/preferences.db`).
 
-The Vue UI is a separate Vite app. In another terminal:
+The Vue UI is a separate Vite app. Keep the Go server running, then in another terminal:
 
 ```
 cd ui
@@ -48,4 +48,4 @@ npm install
 npm run dev
 ```
 
-The UI scaffold is an empty dashboard shell (header, scrolling sidebar, map pane, footer). It does not call the API yet.
+Vite proxies `/api` to `http://localhost:8080`, so the browser can call `GET /api/devices` without CORS. The sidebar and map pane show the device names from that request.

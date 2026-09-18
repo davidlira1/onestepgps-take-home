@@ -1,3 +1,11 @@
+<script setup lang="ts">
+import type { Device } from '@/types/device'
+
+defineProps<{
+  devices: Device[]
+}>()
+</script>
+
 <template>
   <section class="map-pane">Map</section>
 </template>

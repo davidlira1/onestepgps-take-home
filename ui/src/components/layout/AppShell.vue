@@ -1,16 +1,22 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
+import { useDevices } from '@/composables/useDevices'
 import AppHeader from './AppHeader.vue'
 import AppSidebar from './AppSidebar.vue'
 import AppMapPane from './AppMapPane.vue'
 import AppFooter from './AppFooter.vue'
+
+const { devices, loading, error, load } = useDevices()
+
+onMounted(load)
 </script>
 
 <template>
   <div class="shell">
     <AppHeader />
     <div class="main">
-      <AppSidebar />
-      <AppMapPane />
+      <AppSidebar :devices="devices" :loading="loading" :error="error" />
+      <AppMapPane :devices="devices" />
     </div>
     <AppFooter />
   </div>
