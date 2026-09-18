@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Device } from '@/types/device'
+import DeviceListItem from '@/components/devices/DeviceListItem.vue'
 
 defineProps<{
   devices: Device[]
@@ -10,13 +11,11 @@ defineProps<{
 
 <template>
   <aside class="sidebar">
-    <div class="sidebar-inner">
-      <p v-if="loading">Loading devices…</p>
-      <p v-else-if="error" class="error">{{ error }}</p>
-      <ul v-else>
-        <li v-for="device in devices" :key="device.id">{{ device.name }}</li>
-      </ul>
-    </div>
+    <p v-if="loading" class="message">Loading devices…</p>
+    <p v-else-if="error" class="message error">{{ error }}</p>
+    <ul v-else class="device-list">
+      <DeviceListItem v-for="device in devices" :key="device.id" :device="device" />
+    </ul>
   </aside>
 </template>
 
@@ -29,18 +28,15 @@ defineProps<{
   border-right: 1px solid var(--border);
 }
 
-.sidebar-inner {
-  padding: 16px 20px;
-}
-
-ul {
+.device-list {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-li + li {
-  margin-top: 8px;
+.message {
+  margin: 0;
+  padding: 16px 20px;
 }
 
 .error {
