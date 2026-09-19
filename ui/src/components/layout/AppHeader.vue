@@ -94,6 +94,6 @@ import IconLocationArrow from '@/components/icons/IconLocationArrow.vue'
 }
 
 .prefs:hover {
-  background: #f3f4f6;
+  background: var(--hover);
 }
 </style>

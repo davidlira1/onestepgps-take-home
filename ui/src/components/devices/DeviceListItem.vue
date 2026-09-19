@@ -57,7 +57,7 @@ const coords = computed(() => {
 }
 
 .item:hover {
-  background: #f3f4f6;
+  background: var(--hover);
 }
 
 .item + .item {

@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useDevices } from '@/composables/useDevices'
+import { usePreferences } from '@/composables/usePreferences'
 import AppHeader from './AppHeader.vue'
 import AppSidebar from './AppSidebar.vue'
 import AppMapPane from './AppMapPane.vue'
 import AppFooter from './AppFooter.vue'
 
-const { devices, loading, error, load } = useDevices()
+const { devices, loading, error, load: loadDevices } = useDevices()
+const { load: loadPreferences } = usePreferences()
 const selectedDeviceId = ref<string | null>(null)
 const focusNonce = ref(0)
 
@@ -15,7 +17,10 @@ function selectDevice(id: string) {
   focusNonce.value += 1
 }
 
-onMounted(load)
+onMounted(() => {
+  loadDevices()
+  loadPreferences()
+})
 </script>
 
 <template>

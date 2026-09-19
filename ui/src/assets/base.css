@@ -4,7 +4,17 @@
   --border: #e2e5ea;
   --text: #1a1d21;
   --muted: #6b7280;
+  --hover: #f3f4f6;
   --sidebar-width: 320px;
+}
+
+[data-theme="dark"] {
+  --bg: #121417;
+  --surface: #1a1d21;
+  --border: #2c3138;
+  --text: #f3f4f6;
+  --muted: #9ca3af;
+  --hover: #262b31;
 }
 
 *,
