@@ -2,19 +2,45 @@
 import { onMounted, ref } from 'vue'
 import { useDevices } from '@/composables/useDevices'
 import { usePreferences } from '@/composables/usePreferences'
+import PreferencesModal from '@/components/preferences/PreferencesModal.vue'
 import AppHeader from './AppHeader.vue'
 import AppSidebar from './AppSidebar.vue'
 import AppMapPane from './AppMapPane.vue'
 import AppFooter from './AppFooter.vue'
 
 const { devices, loading, error, load: loadDevices } = useDevices()
-const { load: loadPreferences } = usePreferences()
+const {
+  preferences,
+  saving,
+  saveError,
+  load: loadPreferences,
+  updatePreferences,
+} = usePreferences()
 const selectedDeviceId = ref<string | null>(null)
 const focusNonce = ref(0)
+const preferencesOpen = ref(false)
 
 function selectDevice(id: string) {
   selectedDeviceId.value = id
   focusNonce.value += 1
+}
+
+function openPreferences() {
+  saveError.value = null
+  preferencesOpen.value = true
+}
+
+function closePreferences() {
+  preferencesOpen.value = false
+}
+
+async function saveTheme(theme: string) {
+  try {
+    await updatePreferences({ theme })
+    preferencesOpen.value = false
+  } catch {
+    // Keep the modal open; saveError is shown inline.
+  }
 }
 
 onMounted(() => {
@@ -25,7 +51,7 @@ onMounted(() => {
 
 <template>
   <div class="shell">
-    <AppHeader />
+    <AppHeader @preferences="openPreferences" />
     <div class="main">
       <AppSidebar
         :devices="devices"
@@ -40,6 +66,14 @@ onMounted(() => {
       />
     </div>
     <AppFooter />
+    <PreferencesModal
+      v-if="preferencesOpen && preferences"
+      :theme="preferences.theme"
+      :saving="saving"
+      :save-error="saveError"
+      @close="closePreferences"
+      @save="saveTheme"
+    />
   </div>
 </template>
 

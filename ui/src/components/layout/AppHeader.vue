@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import IconGear from '@/components/icons/IconGear.vue'
 import IconLocationArrow from '@/components/icons/IconLocationArrow.vue'
+
+defineEmits<{
+  preferences: []
+}>()
 </script>
 
 <template>
@@ -16,7 +20,7 @@ import IconLocationArrow from '@/components/icons/IconLocationArrow.vue'
       </p>
     </div>
 
-    <button type="button" class="prefs">
+    <button type="button" class="prefs" @click="$emit('preferences')">
       <IconGear class="prefs-icon" />
       Preferences
     </button>

@@ -5,3 +5,5 @@ export type Preferences = {
   map_type: string
   theme: string
 }
+
+export type PreferenceChanges = Partial<Omit<Preferences, 'version'>>
