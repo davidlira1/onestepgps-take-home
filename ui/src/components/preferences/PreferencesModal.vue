@@ -1,25 +1,67 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import type { Device } from '@/types/device'
 
 const props = defineProps<{
   theme: string
+  hiddenDeviceIds: string[]
+  devices: Device[]
   saving: boolean
   saveError: string | null
 }>()
 
 const emit = defineEmits<{
   close: []
-  save: [theme: string]
+  save: [changes: { theme: string; hidden_device_ids: string[] }]
 }>()
 
 const draftTheme = ref(props.theme)
+const draftHiddenDeviceIds = ref([...props.hiddenDeviceIds])
+const vehicleSearch = ref('')
+const vehiclesOpen = ref(false)
+
+const hiddenCount = computed(
+  () => props.devices.filter((device) => draftHiddenDeviceIds.value.includes(device.id)).length,
+)
+const visibleCount = computed(() => props.devices.length - hiddenCount.value)
+
+const searchedVehicles = computed(() => {
+  const query = vehicleSearch.value.trim().toLowerCase()
+  if (!query) return props.devices
+  return props.devices.filter((device) => device.name.toLowerCase().includes(query))
+})
 
 function selectTheme(theme: string) {
   draftTheme.value = theme
 }
 
+function isVisible(id: string) {
+  return !draftHiddenDeviceIds.value.includes(id)
+}
+
+function toggleVisibility(id: string, visible: boolean) {
+  if (visible) {
+    draftHiddenDeviceIds.value = draftHiddenDeviceIds.value.filter((hiddenId) => hiddenId !== id)
+    return
+  }
+  if (!draftHiddenDeviceIds.value.includes(id)) {
+    draftHiddenDeviceIds.value = [...draftHiddenDeviceIds.value, id]
+  }
+}
+
+function showAll() {
+  draftHiddenDeviceIds.value = []
+}
+
+function toggleVehicles() {
+  vehiclesOpen.value = !vehiclesOpen.value
+}
+
 function save() {
-  emit('save', draftTheme.value)
+  emit('save', {
+    theme: draftTheme.value,
+    hidden_device_ids: [...draftHiddenDeviceIds.value],
+  })
 }
 </script>
 
@@ -40,7 +82,6 @@ function save() {
             type="button"
             class="theme-card"
             :class="{ selected: draftTheme === 'light' }"
-            :disabled="theme === 'light'"
             @click="selectTheme('light')"
           >
             <span class="theme-icon" aria-hidden="true">☀</span>
@@ -50,7 +91,6 @@ function save() {
             type="button"
             class="theme-card"
             :class="{ selected: draftTheme === 'dark' }"
-            :disabled="theme === 'dark'"
             @click="selectTheme('dark')"
           >
             <span class="theme-icon" aria-hidden="true">☾</span>
@@ -59,7 +99,64 @@ function save() {
         </div>
       </section>
 
-      <p v-if="saveError" class="error">{{ saveError }}</p>
+      <hr class="divider" />
+
+      <section class="section">
+        <p class="section-label">Vehicles</p>
+
+        <button
+          type="button"
+          class="visibility-toggle"
+          :aria-expanded="vehiclesOpen"
+          @click="toggleVehicles"
+        >
+          <span class="field-label">Vehicle visibility</span>
+          <span class="chevron" :class="{ open: vehiclesOpen }" aria-hidden="true"></span>
+        </button>
+        <p class="helper">Choose which vehicles appear in the fleet.</p>
+
+        <template v-if="vehiclesOpen">
+          <div class="summary">
+            <p class="counts">{{ visibleCount }} visible · {{ hiddenCount }} hidden</p>
+            <button
+              type="button"
+              class="show-all"
+              :disabled="hiddenCount === 0"
+              @click="showAll"
+            >
+              Show all
+            </button>
+          </div>
+
+          <input
+            type="search"
+            class="search-input"
+            placeholder="Search vehicles..."
+            :value="vehicleSearch"
+            @input="vehicleSearch = ($event.target as HTMLInputElement).value"
+          />
+
+          <p v-if="vehicleSearch.trim() && searchedVehicles.length === 0" class="empty">
+            No vehicles found
+          </p>
+          <ul v-else class="vehicle-list">
+            <li v-for="device in searchedVehicles" :key="device.id" class="vehicle-row">
+              <label class="vehicle">
+                <input
+                  type="checkbox"
+                  :checked="isVisible(device.id)"
+                  @change="toggleVisibility(device.id, ($event.target as HTMLInputElement).checked)"
+                />
+                <span class="vehicle-name">{{ device.name }}</span>
+                <span class="connectivity" :class="{ online: device.online }">
+                  <span class="dot" aria-hidden="true"></span>
+                  {{ device.online ? 'Online' : 'Offline' }}
+                </span>
+              </label>
+            </li>
+          </ul>
+        </template>
+      </section>
 
       <footer class="actions">
         <button type="button" class="btn" @click="emit('close')">Cancel</button>
@@ -82,7 +179,7 @@ function save() {
 }
 
 .dialog {
-  width: min(420px, calc(100vw - 32px));
+  width: min(520px, calc(100vw - 32px));
   padding: 20px 20px 16px;
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -140,6 +237,42 @@ function save() {
   font-size: 14px;
 }
 
+.visibility-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.visibility-toggle .field-label {
+  margin: 0;
+}
+
+.chevron {
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid var(--muted);
+  border-bottom: 1.5px solid var(--muted);
+  transform: rotate(45deg);
+  transition: transform 0.15s ease;
+}
+
+.chevron.open {
+  transform: translateY(2px) rotate(-135deg);
+}
+
+.helper {
+  margin: 6px 0 12px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
 .themes {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -161,13 +294,8 @@ function save() {
   cursor: pointer;
 }
 
-.theme-card:hover:not(:disabled) {
+.theme-card:hover {
   background: var(--hover);
-}
-
-.theme-card:disabled {
-  opacity: 0.55;
-  cursor: default;
 }
 
 .theme-card.selected {
@@ -179,9 +307,120 @@ function save() {
   font-size: 16px;
 }
 
-.error {
-  margin: 0 0 16px;
-  color: #b91c1c;
+.divider {
+  margin: 0 0 20px;
+  border: none;
+  border-top: 1px solid var(--border);
+}
+
+.search-input {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+}
+
+.search-input::placeholder {
+  color: var(--muted);
+}
+
+.search-input:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.counts {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.show-all {
+  padding: 0;
+  border: none;
+  background: none;
+  color: #2563eb;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.show-all:disabled {
+  color: var(--muted);
+  cursor: default;
+}
+
+.vehicle-list {
+  max-height: 260px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  list-style: none;
+}
+
+.vehicle-row + .vehicle-row {
+  border-top: 1px solid var(--border);
+}
+
+.vehicle {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.vehicle:hover {
+  background: var(--hover);
+}
+
+.vehicle-name {
+  font-size: 14px;
+}
+
+.connectivity {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.connectivity.online {
+  color: #15803d;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #9ca3af;
+}
+
+.connectivity.online .dot {
+  background: #22c55e;
+}
+
+.empty {
+  margin: 0;
+  padding: 16px 12px;
+  color: var(--muted);
   font-size: 13px;
 }
 

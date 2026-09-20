@@ -28,6 +28,8 @@ const currentSort = ref(defaultPreferences().sort)
 const userChoseSort = ref(false)
 const currentTheme = ref(defaultPreferences().theme)
 const userChoseTheme = ref(false)
+const currentHiddenDeviceIds = ref<string[]>([...defaultPreferences().hidden_device_ids])
+const userChoseHidden = ref(false)
 const toastMessage = ref<string | null>(null)
 let sortSaveId = 0
 
@@ -49,13 +51,24 @@ watch(
   },
 )
 
+watch(
+  () => preferences.value.hidden_device_ids,
+  (hiddenIds) => {
+    if (!userChoseHidden.value) {
+      currentHiddenDeviceIds.value = [...hiddenIds]
+    }
+  },
+)
+
 watch(currentTheme, (theme) => applyTheme(theme), { immediate: true })
 
 const displayedDevices = computed(() => {
+  const hidden = new Set(currentHiddenDeviceIds.value)
+  const visible = devices.value.filter((device) => !hidden.has(device.id))
   const query = searchQuery.value.trim().toLowerCase()
   const filtered = query
-    ? devices.value.filter((device) => device.name.toLowerCase().includes(query))
-    : devices.value
+    ? visible.filter((device) => device.name.toLowerCase().includes(query))
+    : visible
   return sortDevices(filtered, currentSort.value)
 })
 
@@ -73,15 +86,17 @@ function closePreferences() {
   preferencesOpen.value = false
 }
 
-async function saveTheme(theme: string) {
+async function savePreferences(changes: { theme: string; hidden_device_ids: string[] }) {
   userChoseTheme.value = true
-  currentTheme.value = theme
+  userChoseHidden.value = true
+  currentTheme.value = changes.theme
+  currentHiddenDeviceIds.value = [...changes.hidden_device_ids]
   preferencesOpen.value = false
   toastMessage.value = null
   try {
-    await updatePreferences({ theme })
+    await updatePreferences(changes)
   } catch {
-    toastMessage.value = "Theme changed, but couldn't save your preference."
+    toastMessage.value = "Preferences changed, but couldn't save them."
   }
 }
 
@@ -131,10 +146,12 @@ onMounted(() => {
     <PreferencesModal
       v-if="preferencesOpen"
       :theme="currentTheme"
+      :hidden-device-ids="currentHiddenDeviceIds"
+      :devices="devices"
       :saving="saving"
       :save-error="saveError"
       @close="closePreferences"
-      @save="saveTheme"
+      @save="savePreferences"
     />
     <AppToast
       v-if="toastMessage"
