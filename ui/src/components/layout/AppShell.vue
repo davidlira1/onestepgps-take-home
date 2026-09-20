@@ -4,6 +4,7 @@ import { useDevices } from '@/composables/useDevices'
 import { usePreferences } from '@/composables/usePreferences'
 import PreferencesModal from '@/components/preferences/PreferencesModal.vue'
 import { defaultPreferences } from '@/types/preferences'
+import { applyTheme } from '@/utils/applyTheme'
 import { sortDevices } from '@/utils/sortDevices'
 import AppHeader from './AppHeader.vue'
 import AppSidebar from './AppSidebar.vue'
@@ -25,7 +26,9 @@ const preferencesOpen = ref(false)
 const searchQuery = ref('')
 const currentSort = ref(defaultPreferences().sort)
 const userChoseSort = ref(false)
-const sortSaveError = ref<string | null>(null)
+const currentTheme = ref(defaultPreferences().theme)
+const userChoseTheme = ref(false)
+const toastMessage = ref<string | null>(null)
 let sortSaveId = 0
 
 watch(
@@ -36,6 +39,17 @@ watch(
     }
   },
 )
+
+watch(
+  () => preferences.value.theme,
+  (theme) => {
+    if (!userChoseTheme.value) {
+      currentTheme.value = theme
+    }
+  },
+)
+
+watch(currentTheme, (theme) => applyTheme(theme), { immediate: true })
 
 const displayedDevices = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
@@ -60,27 +74,30 @@ function closePreferences() {
 }
 
 async function saveTheme(theme: string) {
+  userChoseTheme.value = true
+  currentTheme.value = theme
+  preferencesOpen.value = false
+  toastMessage.value = null
   try {
     await updatePreferences({ theme })
-    preferencesOpen.value = false
   } catch {
-    // Keep the modal open; saveError is shown inline.
+    toastMessage.value = "Theme changed, but couldn't save your preference."
   }
 }
 
 async function changeSort(sort: string) {
   userChoseSort.value = true
   currentSort.value = sort
-  sortSaveError.value = null
+  toastMessage.value = null
   const requestId = ++sortSaveId
   try {
     await updatePreferences({ sort })
     if (requestId === sortSaveId) {
-      sortSaveError.value = null
+      toastMessage.value = null
     }
   } catch {
     if (requestId === sortSaveId) {
-      sortSaveError.value = "Sort changed, but couldn't save your preference."
+      toastMessage.value = "Sort changed, but couldn't save your preference."
     }
   }
 }
@@ -113,16 +130,16 @@ onMounted(() => {
     <AppFooter />
     <PreferencesModal
       v-if="preferencesOpen"
-      :theme="preferences.theme"
+      :theme="currentTheme"
       :saving="saving"
       :save-error="saveError"
       @close="closePreferences"
       @save="saveTheme"
     />
     <AppToast
-      v-if="sortSaveError"
-      :message="sortSaveError"
-      @close="sortSaveError = null"
+      v-if="toastMessage"
+      :message="toastMessage"
+      @close="toastMessage = null"
     />
   </div>
 </template>
