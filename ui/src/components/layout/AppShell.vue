@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useDevices } from '@/composables/useDevices'
 import { usePreferences } from '@/composables/usePreferences'
 import PreferencesModal from '@/components/preferences/PreferencesModal.vue'
+import { defaultPreferences } from '@/types/preferences'
+import { sortDevices } from '@/utils/sortDevices'
 import AppHeader from './AppHeader.vue'
 import AppSidebar from './AppSidebar.vue'
 import AppMapPane from './AppMapPane.vue'
 import AppFooter from './AppFooter.vue'
+import AppToast from './AppToast.vue'
 
 const { devices, loading, error, load: loadDevices } = useDevices()
 const {
@@ -20,13 +23,26 @@ const selectedDeviceId = ref<string | null>(null)
 const focusNonce = ref(0)
 const preferencesOpen = ref(false)
 const searchQuery = ref('')
+const currentSort = ref(defaultPreferences().sort)
+const userChoseSort = ref(false)
+const sortSaveError = ref<string | null>(null)
+let sortSaveId = 0
 
-const searchedDevices = computed(() => {
+watch(
+  () => preferences.value.sort,
+  (sort) => {
+    if (!userChoseSort.value) {
+      currentSort.value = sort
+    }
+  },
+)
+
+const displayedDevices = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
-  if (!query) return devices.value
-  return devices.value.filter((device) =>
-    device.name.toLowerCase().includes(query),
-  )
+  const filtered = query
+    ? devices.value.filter((device) => device.name.toLowerCase().includes(query))
+    : devices.value
+  return sortDevices(filtered, currentSort.value)
 })
 
 function selectDevice(id: string) {
@@ -52,6 +68,23 @@ async function saveTheme(theme: string) {
   }
 }
 
+async function changeSort(sort: string) {
+  userChoseSort.value = true
+  currentSort.value = sort
+  sortSaveError.value = null
+  const requestId = ++sortSaveId
+  try {
+    await updatePreferences({ sort })
+    if (requestId === sortSaveId) {
+      sortSaveError.value = null
+    }
+  } catch {
+    if (requestId === sortSaveId) {
+      sortSaveError.value = "Sort changed, but couldn't save your preference."
+    }
+  }
+}
+
 onMounted(() => {
   loadDevices()
   loadPreferences()
@@ -64,13 +97,15 @@ onMounted(() => {
     <div class="main">
       <AppSidebar
         v-model:search-query="searchQuery"
-        :devices="searchedDevices"
+        :devices="displayedDevices"
         :loading="loading"
         :error="error"
+        :current-sort="currentSort"
         @select="selectDevice"
+        @update:current-sort="changeSort"
       />
       <AppMapPane
-        :devices="searchedDevices"
+        :devices="displayedDevices"
         :selected-device-id="selectedDeviceId"
         :focus-nonce="focusNonce"
       />
@@ -83,6 +118,11 @@ onMounted(() => {
       :save-error="saveError"
       @close="closePreferences"
       @save="saveTheme"
+    />
+    <AppToast
+      v-if="sortSaveError"
+      :message="sortSaveError"
+      @close="sortSaveError = null"
     />
   </div>
 </template>

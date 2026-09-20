@@ -28,19 +28,30 @@ export function usePreferences() {
     }
   }
 
+  let persistGeneration = 0
+
   async function updatePreferences(changes: PreferenceChanges) {
+    const generation = ++persistGeneration
     saving.value = true
     saveError.value = null
     try {
-      preferences.value = await patchPreferences({
+      const result = await patchPreferences({
         version: preferences.value.version,
         ...changes,
       })
+      if (generation !== persistGeneration) {
+        return
+      }
+      preferences.value = result
     } catch (err) {
-      saveError.value = err instanceof Error ? err.message : 'Failed to save preferences'
+      if (generation === persistGeneration) {
+        saveError.value = err instanceof Error ? err.message : 'Failed to save preferences'
+      }
       throw err
     } finally {
-      saving.value = false
+      if (generation === persistGeneration) {
+        saving.value = false
+      }
     }
   }
 

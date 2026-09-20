@@ -99,4 +99,41 @@ describe('usePreferences', () => {
     expect(saving.value).toBe(false)
     expect(saveError.value).toBe('Failed to save preferences: 409')
   })
+
+  it('ignores a stale update that completes after a newer one', async () => {
+    const current: Preferences = {
+      version: 1,
+      sort: 'name_asc',
+      hidden_device_ids: [],
+      map_type: 'roadmap',
+      theme: 'light',
+    }
+    const firstSaved: Preferences = { ...current, version: 2, sort: 'name_desc' }
+    const secondSaved: Preferences = { ...current, version: 3, sort: 'last_seen_desc' }
+
+    let resolveFirst!: (value: Preferences) => void
+    const firstResponse = new Promise<Preferences>((resolve) => {
+      resolveFirst = resolve
+    })
+
+    vi.spyOn(preferencesApi, 'getPreferences').mockResolvedValueOnce(current)
+    vi.spyOn(preferencesApi, 'patchPreferences')
+      .mockImplementationOnce(() => firstResponse)
+      .mockResolvedValueOnce(secondSaved)
+
+    const { preferences, saveError, load, updatePreferences } = usePreferences()
+    await load()
+
+    const firstPromise = updatePreferences({ sort: 'name_desc' })
+    const secondPromise = updatePreferences({ sort: 'last_seen_desc' })
+
+    await secondPromise
+    expect(preferences.value).toEqual(secondSaved)
+    expect(saveError.value).toBeNull()
+
+    resolveFirst(firstSaved)
+    await firstPromise
+    expect(preferences.value).toEqual(secondSaved)
+    expect(saveError.value).toBeNull()
+  })
 })
