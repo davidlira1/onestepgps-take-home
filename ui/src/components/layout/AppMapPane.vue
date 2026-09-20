@@ -33,6 +33,8 @@ const mapPoints = computed(() =>
   })),
 )
 
+const locatedDeviceIds = computed(() => locatedDevices.value.map((device) => device.id))
+
 const focusTarget = computed(() => {
   if (!props.selectedDeviceId) {
     return null
@@ -58,7 +60,12 @@ const focusTarget = computed(() => {
           :lng="device.longitude"
           :title="device.name"
         />
-        <GoogleMapFitBounds :google="google" :map="map" :points="mapPoints" />
+        <GoogleMapFitBounds
+          :google="google"
+          :map="map"
+          :points="mapPoints"
+          :device-ids="locatedDeviceIds"
+        />
         <GoogleMapFocus :map="map" :target="focusTarget" />
       </template>
     </GoogleMapLoader>

@@ -1,5 +1,8 @@
 import type { Device, DeviceApi } from '@/types/device'
 
+const DEGREES_PER_KMH = 0.00004
+const HEADING_WANDER_DEG = 8
+
 const laLocations = [
   { name: 'Ford Lightning', make: 'Ford', model: 'F-150 Lightning', lat: 34.0522, lng: -118.2437, status: 'driving', speed: 45, heading: 90 },
   { name: 'Ford Transit', make: 'Ford', model: 'Transit-250', lat: 34.0195, lng: -118.4912, status: 'stopped', speed: 0, heading: 180 },
@@ -32,9 +35,29 @@ for (let i = 0; i < laLocations.length; i++) {
   })
 }
 
+function stepDrivingDevices() {
+  for (const device of mockDevices) {
+    if (
+      device.drive_status !== 'driving' ||
+      device.latitude == null ||
+      device.longitude == null
+    ) {
+      continue
+    }
+
+    device.heading = (device.heading + (Math.random() * 2 - 1) * HEADING_WANDER_DEG + 360) % 360
+    const radians = (device.heading * Math.PI) / 180
+    const step = device.speed_kmh * DEGREES_PER_KMH
+    device.latitude += step * Math.cos(radians)
+    device.longitude += step * Math.sin(radians)
+    device.last_seen_at = new Date().toISOString()
+  }
+}
+
 export const mockDeviceApi: DeviceApi = {
   async listDevices(): Promise<Device[]> {
     await new Promise((resolve) => setTimeout(resolve, 500))
-    return mockDevices
+    stepDrivingDevices()
+    return mockDevices.map((device) => ({ ...device }))
   },
 }

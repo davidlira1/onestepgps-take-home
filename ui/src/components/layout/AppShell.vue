@@ -12,7 +12,8 @@ import AppMapPane from './AppMapPane.vue'
 import AppFooter from './AppFooter.vue'
 import AppToast from './AppToast.vue'
 
-const { devices, loading, error, load: loadDevices } = useDevices()
+const { devices, loading, error, lastUpdated, refreshError, load: loadDevices } =
+  useDevices()
 const {
   preferences,
   saving,
@@ -142,7 +143,7 @@ onMounted(() => {
         :focus-nonce="focusNonce"
       />
     </div>
-    <AppFooter />
+    <AppFooter :last-updated="lastUpdated" :refresh-error="refreshError" />
     <PreferencesModal
       v-if="preferencesOpen"
       :theme="currentTheme"

@@ -5,6 +5,7 @@ const props = defineProps<{
   google: typeof google
   map: google.maps.Map
   points: { lat: number; lng: number }[]
+  deviceIds: string[]
 }>()
 
 function fit() {
@@ -27,7 +28,11 @@ function fit() {
   props.map.fitBounds(bounds, 48)
 }
 
-watch(() => props.points, fit, { immediate: true })
+watch(
+  () => [...props.deviceIds].sort().join(','),
+  fit,
+  { immediate: true },
+)
 </script>
 
 <template>

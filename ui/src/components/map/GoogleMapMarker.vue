@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, watch } from 'vue'
 
 const props = defineProps<{
   google: typeof google
@@ -18,6 +18,20 @@ onMounted(() => {
     title: props.title,
   })
 })
+
+watch(
+  () => [props.lat, props.lng] as const,
+  ([lat, lng]) => {
+    marker?.setPosition({ lat, lng })
+  },
+)
+
+watch(
+  () => props.title,
+  (title) => {
+    marker?.setTitle(title)
+  },
+)
 
 onUnmounted(() => {
   marker?.setMap(null)
