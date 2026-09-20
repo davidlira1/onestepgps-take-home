@@ -1,16 +1,20 @@
 import { ref, watch } from 'vue'
 import { getPreferences, patchPreferences } from '@/api/preferences'
-import type { PreferenceChanges, Preferences } from '@/types/preferences'
+import {
+  defaultPreferences,
+  type PreferenceChanges,
+  type Preferences,
+} from '@/types/preferences'
 import { applyTheme } from '@/utils/applyTheme'
 
 export function usePreferences() {
-  const preferences = ref<Preferences | null>(null)
+  const preferences = ref<Preferences>(defaultPreferences())
   const loading = ref(false)
   const error = ref<string | null>(null)
   const saving = ref(false)
   const saveError = ref<string | null>(null)
 
-  watch(preferences, (prefs) => applyTheme(prefs?.theme), { immediate: true })
+  watch(preferences, (prefs) => applyTheme(prefs.theme), { immediate: true })
 
   async function load() {
     loading.value = true
@@ -25,10 +29,6 @@ export function usePreferences() {
   }
 
   async function updatePreferences(changes: PreferenceChanges) {
-    if (!preferences.value) {
-      saveError.value = 'Preferences not loaded'
-      throw new Error(saveError.value)
-    }
     saving.value = true
     saveError.value = null
     try {

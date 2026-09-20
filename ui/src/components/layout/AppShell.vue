@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useDevices } from '@/composables/useDevices'
 import { usePreferences } from '@/composables/usePreferences'
 import PreferencesModal from '@/components/preferences/PreferencesModal.vue'
@@ -19,6 +19,15 @@ const {
 const selectedDeviceId = ref<string | null>(null)
 const focusNonce = ref(0)
 const preferencesOpen = ref(false)
+const searchQuery = ref('')
+
+const searchedDevices = computed(() => {
+  const query = searchQuery.value.trim().toLowerCase()
+  if (!query) return devices.value
+  return devices.value.filter((device) =>
+    device.name.toLowerCase().includes(query),
+  )
+})
 
 function selectDevice(id: string) {
   selectedDeviceId.value = id
@@ -54,20 +63,21 @@ onMounted(() => {
     <AppHeader @preferences="openPreferences" />
     <div class="main">
       <AppSidebar
-        :devices="devices"
+        v-model:search-query="searchQuery"
+        :devices="searchedDevices"
         :loading="loading"
         :error="error"
         @select="selectDevice"
       />
       <AppMapPane
-        :devices="devices"
+        :devices="searchedDevices"
         :selected-device-id="selectedDeviceId"
         :focus-nonce="focusNonce"
       />
     </div>
     <AppFooter />
     <PreferencesModal
-      v-if="preferencesOpen && preferences"
+      v-if="preferencesOpen"
       :theme="preferences.theme"
       :saving="saving"
       :save-error="saveError"

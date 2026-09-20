@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import * as preferencesApi from '@/api/preferences'
 import { usePreferences } from './usePreferences'
-import type { Preferences } from '@/types/preferences'
+import { defaultPreferences, type Preferences } from '@/types/preferences'
 
 vi.mock('@/utils/applyTheme', () => ({
   applyTheme: vi.fn(),
@@ -20,7 +20,7 @@ describe('usePreferences', () => {
     vi.spyOn(preferencesApi, 'getPreferences').mockResolvedValueOnce(mockPrefs)
 
     const { preferences, loading, error, load } = usePreferences()
-    expect(preferences.value).toBeNull()
+    expect(preferences.value).toEqual(defaultPreferences())
     expect(loading.value).toBe(false)
     expect(error.value).toBeNull()
 
@@ -39,13 +39,13 @@ describe('usePreferences', () => {
     )
 
     const { preferences, loading, error, load } = usePreferences()
-    expect(preferences.value).toBeNull()
+    expect(preferences.value).toEqual(defaultPreferences())
 
     await load()
 
     expect(loading.value).toBe(false)
     expect(error.value).toBe('500 Internal Server Error')
-    expect(preferences.value).toBeNull()
+    expect(preferences.value).toEqual(defaultPreferences())
   })
 
   it('replaces preferences with the server response after a successful theme update', async () => {
