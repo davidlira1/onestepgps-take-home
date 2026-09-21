@@ -31,8 +31,11 @@ const currentTheme = ref(defaultPreferences().theme)
 const userChoseTheme = ref(false)
 const currentHiddenDeviceIds = ref<string[]>([...defaultPreferences().hidden_device_ids])
 const userChoseHidden = ref(false)
+const currentMapType = ref(defaultPreferences().map_type)
+const userChoseMapType = ref(false)
 const toastMessage = ref<string | null>(null)
 let sortSaveId = 0
+let mapSaveId = 0
 
 watch(
   () => preferences.value.sort,
@@ -57,6 +60,15 @@ watch(
   (hiddenIds) => {
     if (!userChoseHidden.value) {
       currentHiddenDeviceIds.value = [...hiddenIds]
+    }
+  },
+)
+
+watch(
+  () => preferences.value.map_type,
+  (mapType) => {
+    if (!userChoseMapType.value) {
+      currentMapType.value = mapType
     }
   },
 )
@@ -101,6 +113,23 @@ async function savePreferences(changes: { theme: string; hidden_device_ids: stri
   }
 }
 
+async function changeMapType(mapType: string) {
+  userChoseMapType.value = true
+  currentMapType.value = mapType
+  toastMessage.value = null
+  const requestId = ++mapSaveId
+  try {
+    await updatePreferences({ map_type: mapType })
+    if (requestId === mapSaveId) {
+      toastMessage.value = null
+    }
+  } catch {
+    if (requestId === mapSaveId) {
+      toastMessage.value = "Map changed, but couldn't save your preference."
+    }
+  }
+}
+
 async function changeSort(sort: string) {
   userChoseSort.value = true
   currentSort.value = sort
@@ -141,6 +170,8 @@ onMounted(() => {
         :devices="displayedDevices"
         :selected-device-id="selectedDeviceId"
         :focus-nonce="focusNonce"
+        :map-type="currentMapType"
+        @update:map-type="changeMapType"
       />
     </div>
     <AppFooter :last-updated="lastUpdated" :refresh-error="refreshError" />

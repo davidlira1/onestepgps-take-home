@@ -84,10 +84,12 @@ HTTP endpoints live in the [server README](server/README.md#api).
 - Google Maps device locations
 - 5-second background refresh
 - Heading / online map markers
-- Search + sorting
-- Hidden-device preferences
-- Light / dark theme
-- SQLite persistence
+- Fleet search
+- SQLite preferences
+  - Sort order
+  - Hidden devices
+  - Light / dark theme
+  - Map / Satellite
 
 ## Realtime
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Device } from '@/types/device'
+import GoogleMapApplyType from '@/components/map/GoogleMapApplyType.vue'
 import GoogleMapFitBounds from '@/components/map/GoogleMapFitBounds.vue'
 import GoogleMapFocus from '@/components/map/GoogleMapFocus.vue'
 import GoogleMapLoader from '@/components/map/GoogleMapLoader.vue'
@@ -10,13 +11,27 @@ const props = defineProps<{
   devices: Device[]
   selectedDeviceId: string | null
   focusNonce: number
+  mapType: string
+}>()
+
+const emit = defineEmits<{
+  'update:mapType': [value: string]
 }>()
 
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? ''
 
-const mapConfig: google.maps.MapOptions = {
+const mapConfig = computed<google.maps.MapOptions>(() => ({
   center: { lat: 34.05, lng: -118.25 },
   zoom: 9,
+  mapTypeControl: false,
+  mapTypeId: props.mapType === 'satellite' ? 'hybrid' : 'roadmap',
+}))
+
+function chooseMapType(next: 'roadmap' | 'satellite') {
+  if (next === props.mapType) {
+    return
+  }
+  emit('update:mapType', next)
 }
 
 const locatedDevices = computed(() =>
@@ -69,6 +84,25 @@ const focusTarget = computed(() => {
           :device-ids="locatedDeviceIds"
         />
         <GoogleMapFocus :map="map" :target="focusTarget" />
+        <GoogleMapApplyType :map="map" :map-type="mapType" />
+        <div class="map-type" role="group" aria-label="Map type">
+          <button
+            type="button"
+            :class="{ active: mapType !== 'satellite' }"
+            :aria-pressed="mapType !== 'satellite'"
+            @click="chooseMapType('roadmap')"
+          >
+            Map
+          </button>
+          <button
+            type="button"
+            :class="{ active: mapType === 'satellite' }"
+            :aria-pressed="mapType === 'satellite'"
+            @click="chooseMapType('satellite')"
+          >
+            Satellite
+          </button>
+        </div>
       </template>
     </GoogleMapLoader>
   </section>
@@ -80,5 +114,43 @@ const focusTarget = computed(() => {
   min-width: 0;
   min-height: 0;
   overflow: hidden;
+}
+
+.map-type {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 1;
+  display: flex;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 18%);
+}
+
+.map-type button {
+  margin: 0;
+  padding: 7px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.map-type button + button {
+  border-left: 1px solid var(--border);
+}
+
+.map-type button.active {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.map-type button:hover {
+  background: var(--hover);
 }
 </style>
