@@ -6,6 +6,7 @@ const props = defineProps<{
   map: google.maps.Map
   points: { lat: number; lng: number }[]
   deviceIds: string[]
+  fitNonce: number
 }>()
 
 function fit() {
@@ -29,7 +30,7 @@ function fit() {
 }
 
 watch(
-  () => [...props.deviceIds].sort().join(','),
+  () => [[...props.deviceIds].sort().join(','), props.fitNonce] as const,
   fit,
   { immediate: true },
 )

@@ -12,10 +12,12 @@ const props = defineProps<{
   selectedDeviceId: string | null
   focusNonce: number
   mapType: string
+  fitNonce: number
 }>()
 
 const emit = defineEmits<{
   'update:mapType': [value: string]
+  showAll: []
 }>()
 
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? ''
@@ -23,7 +25,7 @@ const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? ''
 const mapConfig = computed<google.maps.MapOptions>(() => ({
   center: { lat: 34.05, lng: -118.25 },
   zoom: 9,
-  mapTypeControl: false,
+  disableDefaultUI: true,
   mapTypeId: props.mapType === 'satellite' ? 'hybrid' : 'roadmap',
 }))
 
@@ -82,6 +84,7 @@ const focusTarget = computed(() => {
           :map="map"
           :points="mapPoints"
           :device-ids="locatedDeviceIds"
+          :fit-nonce="fitNonce"
         />
         <GoogleMapFocus :map="map" :target="focusTarget" />
         <GoogleMapApplyType :map="map" :map-type="mapType" />
@@ -103,6 +106,7 @@ const focusTarget = computed(() => {
             Satellite
           </button>
         </div>
+        <button type="button" class="show-all" @click="emit('showAll')">Show all</button>
       </template>
     </GoogleMapLoader>
   </section>
@@ -151,6 +155,28 @@ const focusTarget = computed(() => {
 }
 
 .map-type button:hover {
+  background: var(--hover);
+}
+
+.show-all {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+  margin: 0;
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 18%);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.show-all:hover {
   background: var(--hover);
 }
 </style>

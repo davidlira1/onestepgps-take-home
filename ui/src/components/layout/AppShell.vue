@@ -23,6 +23,7 @@ const {
 } = usePreferences()
 const selectedDeviceId = ref<string | null>(null)
 const focusNonce = ref(0)
+const fitNonce = ref(0)
 const preferencesOpen = ref(false)
 const searchQuery = ref('')
 const currentSort = ref(defaultPreferences().sort)
@@ -88,6 +89,11 @@ const displayedDevices = computed(() => {
 function selectDevice(id: string) {
   selectedDeviceId.value = id
   focusNonce.value += 1
+}
+
+function showAll() {
+  selectedDeviceId.value = null
+  fitNonce.value += 1
 }
 
 function openPreferences() {
@@ -170,8 +176,10 @@ onMounted(() => {
         :devices="displayedDevices"
         :selected-device-id="selectedDeviceId"
         :focus-nonce="focusNonce"
+        :fit-nonce="fitNonce"
         :map-type="currentMapType"
         @update:map-type="changeMapType"
+        @show-all="showAll"
       />
     </div>
     <AppFooter :last-updated="lastUpdated" :refresh-error="refreshError" />
