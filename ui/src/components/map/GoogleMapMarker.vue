@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, watch } from 'vue'
+import { deviceMarkerSymbol } from './deviceMarkerSymbol'
 
 const props = defineProps<{
   google: typeof google
@@ -7,15 +8,22 @@ const props = defineProps<{
   lat: number
   lng: number
   title: string
+  heading: number
+  online: boolean
 }>()
 
 let marker: google.maps.Marker | null = null
+
+function icon() {
+  return deviceMarkerSymbol(props.google, props.heading, props.online)
+}
 
 onMounted(() => {
   marker = new props.google.maps.Marker({
     position: { lat: props.lat, lng: props.lng },
     map: props.map,
     title: props.title,
+    icon: icon(),
   })
 })
 
@@ -30,6 +38,13 @@ watch(
   () => props.title,
   (title) => {
     marker?.setTitle(title)
+  },
+)
+
+watch(
+  () => [props.heading, props.online] as const,
+  () => {
+    marker?.setIcon(icon())
   },
 )
 

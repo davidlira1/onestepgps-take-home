@@ -59,6 +59,8 @@ const focusTarget = computed(() => {
           :lat="device.latitude"
           :lng="device.longitude"
           :title="device.name"
+          :heading="device.heading"
+          :online="device.online"
         />
         <GoogleMapFitBounds
           :google="google"
