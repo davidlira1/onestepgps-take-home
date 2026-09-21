@@ -4,9 +4,11 @@ Take-home project for OneStep GPS.
 
 A small dashboard for OneStep GPS devices: list them, plot their current positions on a map, and save preferences on the server.
 
-## Demo
+## Screenshots
 
-<!-- ![Dashboard](docs/demo.gif) -->
+![Dashboard Overview](docs/dashboard.png)
+
+![Preferences Modal](docs/preferences.png)
 
 ## Layout
 
